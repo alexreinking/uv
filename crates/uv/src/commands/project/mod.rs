@@ -1745,7 +1745,7 @@ pub(crate) async fn resolve_names(
     settings: &ResolverInstallerSettings,
     client_builder: &BaseClientBuilder<'_>,
     state: &SharedState,
-    concurrency: Concurrency,
+    concurrency: &Concurrency,
     cache: &Cache,
     workspace_cache: &WorkspaceCache,
     printer: Printer,
@@ -1871,7 +1871,7 @@ pub(crate) async fn resolve_names(
         exclude_newer.clone(),
         sources.clone(),
         workspace_cache.clone(),
-        concurrency,
+        concurrency.clone(),
         preview,
     );
 
@@ -1880,7 +1880,11 @@ pub(crate) async fn resolve_names(
         NamedRequirementsResolver::new(
             &hasher,
             state.index(),
-            DistributionDatabase::new(&client, &build_dispatch, concurrency.downloads),
+            DistributionDatabase::new(
+                &client,
+                &build_dispatch,
+                concurrency.downloads_semaphore.clone(),
+            ),
         )
         .with_reporter(Arc::new(ResolverReporter::from(printer)))
         .resolve(unnamed.into_iter())
@@ -1939,7 +1943,7 @@ pub(crate) async fn resolve_environment(
     client_builder: &BaseClientBuilder<'_>,
     state: &PlatformState,
     logger: Box<dyn ResolveLogger>,
-    concurrency: Concurrency,
+    concurrency: &Concurrency,
     cache: &Cache,
     printer: Printer,
     preview: Preview,
@@ -2107,7 +2111,7 @@ pub(crate) async fn resolve_environment(
         exclude_newer.clone(),
         sources.clone(),
         workspace_cache,
-        concurrency,
+        concurrency.clone(),
         preview,
     );
 
@@ -2155,7 +2159,7 @@ pub(crate) async fn sync_environment(
     state: &PlatformState,
     logger: Box<dyn InstallLogger>,
     installer_metadata: bool,
-    concurrency: Concurrency,
+    concurrency: &Concurrency,
     cache: &Cache,
     printer: Printer,
     preview: Preview,
@@ -2246,7 +2250,7 @@ pub(crate) async fn sync_environment(
         exclude_newer.clone(),
         sources,
         workspace_cache,
-        concurrency,
+        concurrency.clone(),
         preview,
     );
 
@@ -2312,7 +2316,7 @@ pub(crate) async fn update_environment(
     resolve: Box<dyn ResolveLogger>,
     install: Box<dyn InstallLogger>,
     installer_metadata: bool,
-    concurrency: Concurrency,
+    concurrency: &Concurrency,
     cache: &Cache,
     workspace_cache: WorkspaceCache,
     dry_run: DryRun,
@@ -2502,7 +2506,7 @@ pub(crate) async fn update_environment(
         exclude_newer.clone(),
         sources.clone(),
         workspace_cache,
-        concurrency,
+        concurrency.clone(),
         preview,
     );
 
